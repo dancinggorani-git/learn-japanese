@@ -13,21 +13,17 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 body { font-family: -apple-system, sans-serif; background: #f2f2f7; color: #1c1c1e; min-height: 100vh; padding-bottom: env(safe-area-inset-bottom); }
-
 .header { background: #fff; padding: 52px 16px 12px; border-bottom: 0.5px solid #c6c6c8; position: sticky; top: 0; z-index: 10; }
 .header h1 { font-size: 22px; font-weight: 700; }
 .header p { font-size: 13px; color: #8e8e93; margin-top: 2px; }
-
 .sticky-bar { position: sticky; top: 81px; z-index: 9; background: #f2f2f7; padding: 8px 16px 0; }
 .search { width: 100%; padding: 10px 14px; font-size: 16px; border: none; border-radius: 10px; background: #fff; color: #1c1c1e; outline: none; }
 .filter-wrap { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 8px 0 4px; }
 .filter-wrap::-webkit-scrollbar { display: none; }
 .filter-btn { padding: 6px 14px; font-size: 14px; border: none; border-radius: 20px; background: #fff; color: #8e8e93; cursor: pointer; white-space: nowrap; font-weight: 500; }
 .filter-btn.active { background: #007aff; color: #fff; }
-
 .count { font-size: 13px; color: #8e8e93; padding: 6px 16px 2px; }
 .list { padding: 4px 16px 32px; }
-
 .card { background: #fff; border-radius: 12px; margin-bottom: 8px; overflow: hidden; }
 .card-top { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
 .korean { font-size: 17px; font-weight: 600; }
@@ -35,11 +31,11 @@ body { font-family: -apple-system, sans-serif; background: #f2f2f7; color: #1c1c
 .cat { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 5px; background: #e5e5ea; color: #636366; margin-left: 6px; }
 .arrow { font-size: 11px; color: #c7c7cc; transition: transform 0.2s; flex-shrink: 0; margin-left: 8px; }
 .card.open .arrow { transform: rotate(180deg); }
-
 .detail { display: none; border-top: 0.5px solid #f2f2f7; }
 .card.open .detail { display: block; }
-.row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 16px; border-bottom: 0.5px solid #f2f2f7; }
+.row { padding: 12px 16px; border-bottom: 0.5px solid #f2f2f7; }
 .row:last-child { border-bottom: none; }
+.row-top { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
 .badge { font-size: 11px; font-weight: 600; padding: 3px 0; border-radius: 6px; white-space: nowrap; flex-shrink: 0; width: 58px; text-align: center; margin-top: 2px; }
 .badge.p  { background: #d1f2e8; color: #1a7a4a; }
 .badge.pa { background: #fef3cd; color: #856404; }
@@ -47,10 +43,10 @@ body { font-family: -apple-system, sans-serif; background: #f2f2f7; color: #1c1c
 .badge.pn { background: #e5e5ea; color: #636366; }
 .val .jp  { font-size: 16px; color: #1c1c1e; }
 .val .rom { font-size: 13px; color: #8e8e93; margin-top: 2px; }
-
-.install-banner { display: none; position: fixed; bottom: 20px; left: 16px; right: 16px; background: #1c1c1e; color: #fff; border-radius: 14px; padding: 14px 16px; z-index: 100; font-size: 14px; }
-.install-banner.show { display: flex; align-items: center; gap: 10px; }
-.install-banner button { margin-left: auto; background: #007aff; color: #fff; border: none; border-radius: 8px; padding: 6px 12px; font-size: 13px; cursor: pointer; flex-shrink: 0; }
+.example { background: #f8f8f8; border-radius: 8px; padding: 10px 12px; margin-top: 6px; }
+.ex-jp { font-size: 14px; color: #1c1c1e; line-height: 1.5; }
+.ex-rom { font-size: 12px; color: #8e8e93; margin-top: 3px; line-height: 1.5; }
+.ex-ko { font-size: 13px; color: #3a3a3c; margin-top: 3px; line-height: 1.5; font-weight: 500; }
 
 @media (prefers-color-scheme: dark) {
   body { background: #1c1c1e; color: #f2f2f7; }
@@ -68,16 +64,17 @@ body { font-family: -apple-system, sans-serif; background: #f2f2f7; color: #1c1c
   .badge.n  { background: #3d0d0d; color: #ff453a; }
   .badge.pn { background: #3a3a3c; color: #aeaeb2; }
   .cat { background: #3a3a3c; color: #aeaeb2; }
+  .example { background: #3a3a3c; }
+  .ex-jp { color: #f2f2f7; }
+  .ex-ko { color: #d1d1d6; }
 }
 </style>
 </head>
 <body>
-
 <div class="header">
   <h1>🇯🇵 일본어 동사 활용</h1>
-  <p>탭해서 활용형 확인 · 오프라인 사용 가능</p>
+  <p>탭해서 활용형 + 예문 확인</p>
 </div>
-
 <div class="sticky-bar">
   <input class="search" type="search" placeholder="검색... (먹다, 타베루, 食べる)" id="search" oninput="render()">
   <div class="filter-wrap">
@@ -88,46 +85,214 @@ body { font-family: -apple-system, sans-serif; background: #f2f2f7; color: #1c1c
     <button class="filter-btn" onclick="setFilter('감정',this)">감정</button>
   </div>
 </div>
-
 <div class="count" id="count"></div>
 <div class="list" id="list"></div>
 
-<div class="install-banner" id="banner">
-  <span>📲 홈화면에 추가하면 앱처럼 써요!</span>
-  <button onclick="document.getElementById('banner').style.display='none'">닫기</button>
-</div>
-
 <script>
 const verbs = [
-  {k:"가다",j:"行く",r:"이쿠",cat:"이동",p:"行きます",pr:"이키마스",pa:"行きました",par:"이키마시타",n:"行きません",nr:"이키마센",pn:"行きませんでした",pnr:"이키마센데시타"},
-  {k:"오다",j:"来る",r:"쿠루",cat:"이동",p:"来ます",pr:"키마스",pa:"来ました",par:"키마시타",n:"来ません",nr:"키마센",pn:"来ませんでした",pnr:"키마센데시타"},
-  {k:"돌아가다",j:"帰る",r:"카에루",cat:"이동",p:"帰ります",pr:"카에리마스",pa:"帰りました",par:"카에리마시타",n:"帰りません",nr:"카에리마센",pn:"帰りませんでした",pnr:"카에리마센데시타"},
-  {k:"걷다",j:"歩く",r:"아루쿠",cat:"이동",p:"歩きます",pr:"아루키마스",pa:"歩きました",par:"아루키마시타",n:"歩きません",nr:"아루키마센",pn:"歩きませんでした",pnr:"아루키마센데시타"},
-  {k:"달리다",j:"走る",r:"하시루",cat:"이동",p:"走ります",pr:"하시리마스",pa:"走りました",par:"하시리마시타",n:"走りません",nr:"하시리마센",pn:"走りませんでした",pnr:"하시리마센데시타"},
-  {k:"먹다",j:"食べる",r:"타베루",cat:"행동",p:"食べます",pr:"타베마스",pa:"食べました",par:"타베마시타",n:"食べません",nr:"타베마센",pn:"食べませんでした",pnr:"타베마센데시타"},
-  {k:"마시다",j:"飲む",r:"노무",cat:"행동",p:"飲みます",pr:"노미마스",pa:"飲みました",par:"노미마시타",n:"飲みません",nr:"노미마센",pn:"飲みませんでした",pnr:"노미마센데시타"},
-  {k:"보다",j:"見る",r:"미루",cat:"행동",p:"見ます",pr:"미마스",pa:"見ました",par:"미마시타",n:"見ません",nr:"미마센",pn:"見ませんでした",pnr:"미마센데시타"},
-  {k:"읽다",j:"読む",r:"요무",cat:"행동",p:"読みます",pr:"요미마스",pa:"読みました",par:"요미마시타",n:"読みません",nr:"요미마센",pn:"読みませんでした",pnr:"요미마센데시타"},
-  {k:"쓰다",j:"書く",r:"카쿠",cat:"행동",p:"書きます",pr:"카키마스",pa:"書きました",par:"카키마시타",n:"書きません",nr:"카키마센",pn:"書きませんでした",pnr:"카키마센데시타"},
-  {k:"말하다",j:"話す",r:"하나스",cat:"행동",p:"話します",pr:"하나시마스",pa:"話しました",par:"하나시마시타",n:"話しません",nr:"하나시마센",pn:"話しませんでした",pnr:"하나시마센데시타"},
-  {k:"듣다",j:"聴く",r:"키쿠",cat:"행동",p:"聴きます",pr:"키키마스",pa:"聴きました",par:"키키마시타",n:"聴きません",nr:"키키마센",pn:"聴きませんでした",pnr:"키키마센데시타"},
-  {k:"묻다",j:"聞く",r:"키쿠",cat:"행동",p:"聞きます",pr:"키키마스",pa:"聞きました",par:"키키마시타",n:"聞きません",nr:"키키마센",pn:"聞きませんでした",pnr:"키키마센데시타"},
-  {k:"만들다",j:"作る",r:"츠쿠루",cat:"행동",p:"作ります",pr:"츠쿠리마스",pa:"作りました",par:"츠쿠리마시타",n:"作りません",nr:"츠쿠리마센",pn:"作りませんでした",pnr:"츠쿠리마센데시타"},
-  {k:"사다",j:"買う",r:"카우",cat:"행동",p:"買います",pr:"카이마스",pa:"買いました",par:"카이마시타",n:"買いません",nr:"카이마센",pn:"買いませんでした",pnr:"카이마센데시타"},
-  {k:"팔다",j:"売る",r:"우루",cat:"행동",p:"売ります",pr:"우리마스",pa:"売りました",par:"우리마시타",n:"売りません",nr:"우리마센",pn:"売りませんでした",pnr:"우리마센데시타"},
-  {k:"사용하다",j:"使う",r:"츠카우",cat:"행동",p:"使います",pr:"츠카이마스",pa:"使いました",par:"츠카이마시타",n:"使いません",nr:"츠카이마센",pn:"使いませんでした",pnr:"츠카이마센데시타"},
-  {k:"하다",j:"する",r:"스루",cat:"행동",p:"します",pr:"시마스",pa:"しました",par:"시마시타",n:"しません",nr:"시마센",pn:"しませんでした",pnr:"시마센데시타"},
-  {k:"잠에서 일어나다",j:"起きる",r:"오키루",cat:"일상",p:"起きます",pr:"오키마스",pa:"起きました",par:"오키마시타",n:"起きません",nr:"오키마센",pn:"起きませんでした",pnr:"오키마센데시타"},
-  {k:"자다",j:"寝る",r:"네루",cat:"일상",p:"寝ます",pr:"네마스",pa:"寝ました",par:"네마시타",n:"寝ません",nr:"네마센",pn:"寝ませんでした",pnr:"네마센데시타"},
-  {k:"앉다",j:"座る",r:"스와루",cat:"일상",p:"座ります",pr:"스와리마스",pa:"座りました",par:"스와리마시타",n:"座りません",nr:"스와리마센",pn:"座りませんでした",pnr:"스와리마센데시타"},
-  {k:"서다",j:"立つ",r:"타츠",cat:"일상",p:"立ちます",pr:"타치마스",pa:"立ちました",par:"타치마시타",n:"立ちません",nr:"타치마센",pn:"立ちませんでした",pnr:"타치마센데시타"},
-  {k:"일하다",j:"働く",r:"하타라쿠",cat:"일상",p:"働きます",pr:"하타라키마스",pa:"働きました",par:"하타라키마시타",n:"働きません",nr:"하타라키마센",pn:"働きませんでした",pnr:"하타라키마센데시타"},
-  {k:"만나다",j:"会う",r:"아우",cat:"일상",p:"会います",pr:"아이마스",pa:"会いました",par:"아이마시타",n:"会いません",nr:"아이마센",pn:"会いませんでした",pnr:"아이마센데시타"},
-  {k:"기다리다",j:"待つ",r:"마츠",cat:"일상",p:"待ちます",pr:"마치마스",pa:"待ちました",par:"마치마시타",n:"待ちません",nr:"마치마센",pn:"待ちませんでした",pnr:"마치마센데시타"},
-  {k:"좋아하다",j:"好きだ",r:"스키다",cat:"감정",p:"好きです",pr:"스키데스",pa:"好きでした",par:"스키데시타",n:"好きじゃないです",nr:"스키쟈나이데스",pn:"好きじゃなかったです",pnr:"스키쟈나캇타데스"},
-  {k:"싫어하다",j:"嫌いだ",r:"키라이다",cat:"감정",p:"嫌いです",pr:"키라이데스",pa:"嫌いでした",par:"키라이데시타",n:"嫌いじゃないです",nr:"키라이쟈나이데스",pn:"嫌いじゃなかったです",pnr:"키라이쟈나캇타데스"},
-  {k:"이해하다",j:"わかる",r:"와카루",cat:"감정",p:"わかります",pr:"와카리마스",pa:"わかりました",par:"와카리마시타",n:"わかりません",nr:"와카리마센",pn:"わかりませんでした",pnr:"와카리마센데시타"},
-  {k:"생각하다",j:"思う",r:"오모우",cat:"감정",p:"思います",pr:"오모이마스",pa:"思いました",par:"오모이마시타",n:"思いません",nr:"오모이마센",pn:"思いませんでした",pnr:"오모이마센데시타"},
+  {k:"가다",j:"行く",r:"이쿠",cat:"이동",
+   forms:[
+    {t:"현재",b:"p",jp:"行きます",rom:"이키마스",exJp:"毎日学校に行きます。",exRom:"마이니치 각코니 이키마스。",exKo:"매일 학교에 갑니다。"},
+    {t:"과거",b:"pa",jp:"行きました",rom:"이키마시타",exJp:"昨日公園に行きました。",exRom:"키노 코엔니 이키마시타。",exKo:"어제 공원에 갔습니다。"},
+    {t:"현재부정",b:"n",jp:"行きません",rom:"이키마센",exJp:"今日は学校に行きません。",exRom:"쿄와 각코니 이키마센。",exKo:"오늘은 학교에 가지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"行きませんでした",rom:"이키마센데시타",exJp:"昨日はどこにも行きませんでした。",exRom:"키노와 도코니모 이키마센데시타。",exKo:"어제는 아무데도 가지 않았습니다。"},
+   ]},
+  {k:"오다",j:"来る",r:"쿠루",cat:"이동",
+   forms:[
+    {t:"현재",b:"p",jp:"来ます",rom:"키마스",exJp:"友達が来ます。",exRom:"토모다치가 키마스。",exKo:"친구가 옵니다。"},
+    {t:"과거",b:"pa",jp:"来ました",rom:"키마시타",exJp:"先生が来ました。",exRom:"센세이가 키마시타。",exKo:"선생님이 왔습니다。"},
+    {t:"현재부정",b:"n",jp:"来ません",rom:"키마센",exJp:"今日は誰も来ません。",exRom:"쿄와 다레모 키마센。",exKo:"오늘은 아무도 오지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"来ませんでした",rom:"키마센데시타",exJp:"昨日は誰も来ませんでした。",exRom:"키노와 다레모 키마센데시타。",exKo:"어제는 아무도 오지 않았습니다。"},
+   ]},
+  {k:"돌아가다",j:"帰る",r:"카에루",cat:"이동",
+   forms:[
+    {t:"현재",b:"p",jp:"帰ります",rom:"카에리마스",exJp:"六時に家に帰ります。",exRom:"로쿠지니 이에니 카에리마스。",exKo:"6시에 집에 돌아갑니다。"},
+    {t:"과거",b:"pa",jp:"帰りました",rom:"카에리마시타",exJp:"早く帰りました。",exRom:"하야쿠 카에리마시타。",exKo:"일찍 돌아갔습니다。"},
+    {t:"현재부정",b:"n",jp:"帰りません",rom:"카에리마센",exJp:"今日はまだ帰りません。",exRom:"쿄와 마다 카에리마센。",exKo:"오늘은 아직 돌아가지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"帰りませんでした",rom:"카에리마센데시타",exJp:"昨日は早く帰りませんでした。",exRom:"키노와 하야쿠 카에리마센데시타。",exKo:"어제는 일찍 돌아가지 않았습니다。"},
+   ]},
+  {k:"걷다",j:"歩く",r:"아루쿠",cat:"이동",
+   forms:[
+    {t:"현재",b:"p",jp:"歩きます",rom:"아루키마스",exJp:"毎朝公園を歩きます。",exRom:"마이아사 코엔오 아루키마스。",exKo:"매일 아침 공원을 걷습니다。"},
+    {t:"과거",b:"pa",jp:"歩きました",rom:"아루키마시타",exJp:"駅まで歩きました。",exRom:"에키마데 아루키마시타。",exKo:"역까지 걸었습니다。"},
+    {t:"현재부정",b:"n",jp:"歩きません",rom:"아루키마센",exJp:"疲れて歩きません。",exRom:"츠카레테 아루키마센。",exKo:"피곤해서 걷지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"歩きませんでした",rom:"아루키마센데시타",exJp:"昨日はあまり歩きませんでした。",exRom:"키노와 아마리 아루키마센데시타。",exKo:"어제는 별로 걷지 않았습니다。"},
+   ]},
+  {k:"달리다",j:"走る",r:"하시루",cat:"이동",
+   forms:[
+    {t:"현재",b:"p",jp:"走ります",rom:"하시리마스",exJp:"毎朝公園を走ります。",exRom:"마이아사 코엔오 하시리마스。",exKo:"매일 아침 공원을 달립니다。"},
+    {t:"과거",b:"pa",jp:"走りました",rom:"하시리마시타",exJp:"バスを追いかけて走りました。",exRom:"바스오 오이카케테 하시리마시타。",exKo:"버스를 쫓아서 달렸습니다。"},
+    {t:"현재부정",b:"n",jp:"走りません",rom:"하시리마센",exJp:"今日は走りません。",exRom:"쿄와 하시리마센。",exKo:"오늘은 달리지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"走りませんでした",rom:"하시리마센데시타",exJp:"昨日は走りませんでした。",exRom:"키노와 하시리마센데시타。",exKo:"어제는 달리지 않았습니다。"},
+   ]},
+  {k:"먹다",j:"食べる",r:"타베루",cat:"행동",
+   forms:[
+    {t:"현재",b:"p",jp:"食べます",rom:"타베마스",exJp:"毎日ご飯を食べます。",exRom:"마이니치 고항오 타베마스。",exKo:"매일 밥을 먹습니다。"},
+    {t:"과거",b:"pa",jp:"食べました",rom:"타베마시타",exJp:"朝ごはんを食べました。",exRom:"아사고항오 타베마시타。",exKo:"아침밥을 먹었습니다。"},
+    {t:"현재부정",b:"n",jp:"食べません",rom:"타베마센",exJp:"お肉は食べません。",exRom:"오니쿠와 타베마센。",exKo:"고기는 먹지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"食べませんでした",rom:"타베마센데시타",exJp:"昨日は朝ごはんを食べませんでした。",exRom:"키노와 아사고항오 타베마센데시타。",exKo:"어제는 아침밥을 먹지 않았습니다。"},
+   ]},
+  {k:"마시다",j:"飲む",r:"노무",cat:"행동",
+   forms:[
+    {t:"현재",b:"p",jp:"飲みます",rom:"노미마스",exJp:"毎朝コーヒーを飲みます。",exRom:"마이아사 코히오 노미마스。",exKo:"매일 아침 커피를 마십니다。"},
+    {t:"과거",b:"pa",jp:"飲みました",rom:"노미마시타",exJp:"水を飲みました。",exRom:"미즈오 노미마시타。",exKo:"물을 마셨습니다。"},
+    {t:"현재부정",b:"n",jp:"飲みません",rom:"노미마센",exJp:"お酒は飲みません。",exRom:"오사케와 노미마센。",exKo:"술은 마시지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"飲みませんでした",rom:"노미마센데시타",exJp:"昨日はコーヒーを飲みませんでした。",exRom:"키노와 코히오 노미마센데시타。",exKo:"어제는 커피를 마시지 않았습니다。"},
+   ]},
+  {k:"보다",j:"見る",r:"미루",cat:"행동",
+   forms:[
+    {t:"현재",b:"p",jp:"見ます",rom:"미마스",exJp:"毎晩テレビを見ます。",exRom:"마이방 테레비오 미마스。",exKo:"매일 밤 TV를 봅니다。"},
+    {t:"과거",b:"pa",jp:"見ました",rom:"미마시타",exJp:"昨日映画を見ました。",exRom:"키노 에이가오 미마시타。",exKo:"어제 영화를 봤습니다。"},
+    {t:"현재부정",b:"n",jp:"見ません",rom:"미마센",exJp:"今日はテレビを見ません。",exRom:"쿄와 테레비오 미마센。",exKo:"오늘은 TV를 보지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"見ませんでした",rom:"미마센데시타",exJp:"昨日は映画を見ませんでした。",exRom:"키노와 에이가오 미마센데시타。",exKo:"어제는 영화를 보지 않았습니다。"},
+   ]},
+  {k:"읽다",j:"読む",r:"요무",cat:"행동",
+   forms:[
+    {t:"현재",b:"p",jp:"読みます",rom:"요미마스",exJp:"毎日本を読みます。",exRom:"마이니치 혼오 요미마스。",exKo:"매일 책을 읽습니다。"},
+    {t:"과거",b:"pa",jp:"読みました",rom:"요미마시타",exJp:"面白い本を読みました。",exRom:"오모시로이 혼오 요미마시타。",exKo:"재미있는 책을 읽었습니다。"},
+    {t:"현재부정",b:"n",jp:"読みません",rom:"요미마센",exJp:"難しい本は読みません。",exRom:"무즈카시이 혼와 요미마센。",exKo:"어려운 책은 읽지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"読みませんでした",rom:"요미마센데시타",exJp:"昨日は本を読みませんでした。",exRom:"키노와 혼오 요미마센데시타。",exKo:"어제는 책을 읽지 않았습니다。"},
+   ]},
+  {k:"쓰다",j:"書く",r:"카쿠",cat:"행동",
+   forms:[
+    {t:"현재",b:"p",jp:"書きます",rom:"카키마스",exJp:"日記を書きます。",exRom:"닛키오 카키마스。",exKo:"일기를 씁니다。"},
+    {t:"과거",b:"pa",jp:"書きました",rom:"카키마시타",exJp:"手紙を書きました。",exRom:"테가미오 카키마시타。",exKo:"편지를 썼습니다。"},
+    {t:"현재부정",b:"n",jp:"書きません",rom:"카키마센",exJp:"今日は日記を書きません。",exRom:"쿄와 닛키오 카키마센。",exKo:"오늘은 일기를 쓰지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"書きませんでした",rom:"카키마센데시타",exJp:"昨日は手紙を書きませんでした。",exRom:"키노와 테가미오 카키마센데시타。",exKo:"어제는 편지를 쓰지 않았습니다。"},
+   ]},
+  {k:"말하다",j:"話す",r:"하나스",cat:"행동",
+   forms:[
+    {t:"현재",b:"p",jp:"話します",rom:"하나시마스",exJp:"毎日日本語を話します。",exRom:"마이니치 니혼고오 하나시마스。",exKo:"매일 일본어를 말합니다。"},
+    {t:"과거",b:"pa",jp:"話しました",rom:"하나시마시타",exJp:"友達と話しました。",exRom:"토모다치토 하나시마시타。",exKo:"친구와 말했습니다。"},
+    {t:"현재부정",b:"n",jp:"話しません",rom:"하나시마센",exJp:"今日は話しません。",exRom:"쿄와 하나시마센。",exKo:"오늘은 말하지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"話しませんでした",rom:"하나시마센데시타",exJp:"昨日は話しませんでした。",exRom:"키노와 하나시마센데시타。",exKo:"어제는 말하지 않았습니다。"},
+   ]},
+  {k:"듣다",j:"聴く",r:"키쿠",cat:"행동",
+   forms:[
+    {t:"현재",b:"p",jp:"聴きます",rom:"키키마스",exJp:"音楽を聴きます。",exRom:"온가쿠오 키키마스。",exKo:"음악을 듣습니다。"},
+    {t:"과거",b:"pa",jp:"聴きました",rom:"키키마시타",exJp:"昨日音楽を聴きました。",exRom:"키노 온가쿠오 키키마시타。",exKo:"어제 음악을 들었습니다。"},
+    {t:"현재부정",b:"n",jp:"聴きません",rom:"키키마센",exJp:"今日は音楽を聴きません。",exRom:"쿄와 온가쿠오 키키마센。",exKo:"오늘은 음악을 듣지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"聴きませんでした",rom:"키키마센데시타",exJp:"昨日は音楽を聴きませんでした。",exRom:"키노와 온가쿠오 키키마센데시타。",exKo:"어제는 음악을 듣지 않았습니다。"},
+   ]},
+  {k:"묻다",j:"聞く",r:"키쿠",cat:"행동",
+   forms:[
+    {t:"현재",b:"p",jp:"聞きます",rom:"키키마스",exJp:"先生に聞きます。",exRom:"센세이니 키키마스。",exKo:"선생님께 묻습니다。"},
+    {t:"과거",b:"pa",jp:"聞きました",rom:"키키마시타",exJp:"道を聞きました。",exRom:"미치오 키키마시타。",exKo:"길을 물었습니다。"},
+    {t:"현재부정",b:"n",jp:"聞きません",rom:"키키마센",exJp:"わからなくても聞きません。",exRom:"와카라나쿠테모 키키마센。",exKo:"모르더라도 묻지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"聞きませんでした",rom:"키키마센데시타",exJp:"恥ずかしくて聞きませんでした。",exRom:"하즈카시쿠테 키키마센데시타。",exKo:"부끄러워서 묻지 않았습니다。"},
+   ]},
+  {k:"만들다",j:"作る",r:"츠쿠루",cat:"행동",
+   forms:[
+    {t:"현재",b:"p",jp:"作ります",rom:"츠쿠리마스",exJp:"料理を作ります。",exRom:"료리오 츠쿠리마스。",exKo:"요리를 만듭니다。"},
+    {t:"과거",b:"pa",jp:"作りました",rom:"츠쿠리마시타",exJp:"ケーキを作りました。",exRom:"케키오 츠쿠리마시타。",exKo:"케이크를 만들었습니다。"},
+    {t:"현재부정",b:"n",jp:"作りません",rom:"츠쿠리마센",exJp:"今日は料理を作りません。",exRom:"쿄와 료리오 츠쿠리마센。",exKo:"오늘은 요리를 만들지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"作りませんでした",rom:"츠쿠리마센데시타",exJp:"昨日はご飯を作りませんでした。",exRom:"키노와 고항오 츠쿠리마센데시타。",exKo:"어제는 밥을 만들지 않았습니다。"},
+   ]},
+  {k:"사다",j:"買う",r:"카우",cat:"행동",
+   forms:[
+    {t:"현재",b:"p",jp:"買います",rom:"카이마스",exJp:"スーパーで野菜を買います。",exRom:"스파데 야사이오 카이마스。",exKo:"슈퍼에서 채소를 삽니다。"},
+    {t:"과거",b:"pa",jp:"買いました",rom:"카이마시타",exJp:"新しい服を買いました。",exRom:"아타라시이 후쿠오 카이마시타。",exKo:"새 옷을 샀습니다。"},
+    {t:"현재부정",b:"n",jp:"買いません",rom:"카이마센",exJp:"今日は何も買いません。",exRom:"쿄와 나니모 카이마센。",exKo:"오늘은 아무것도 사지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"買いませんでした",rom:"카이마센데시타",exJp:"昨日は何も買いませんでした。",exRom:"키노와 나니모 카이마센데시타。",exKo:"어제는 아무것도 사지 않았습니다。"},
+   ]},
+  {k:"팔다",j:"売る",r:"우루",cat:"행동",
+   forms:[
+    {t:"현재",b:"p",jp:"売ります",rom:"우리마스",exJp:"お店で花を売ります。",exRom:"오미세데 하나오 우리마스。",exKo:"가게에서 꽃을 팝니다。"},
+    {t:"과거",b:"pa",jp:"売りました",rom:"우리마시타",exJp:"古い車を売りました。",exRom:"후루이 쿠루마오 우리마시타。",exKo:"오래된 차를 팔았습니다。"},
+    {t:"현재부정",b:"n",jp:"売りません",rom:"우리마센",exJp:"このお店では食べ物を売りません。",exRom:"코노 오미세데와 타베모노오 우리마센。",exKo:"이 가게에서는 음식을 팔지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"売りませんでした",rom:"우리마센데시타",exJp:"結局売りませんでした。",exRom:"켓쿄쿠 우리마센데시타。",exKo:"결국 팔지 않았습니다。"},
+   ]},
+  {k:"사용하다",j:"使う",r:"츠카우",cat:"행동",
+   forms:[
+    {t:"현재",b:"p",jp:"使います",rom:"츠카이마스",exJp:"毎日スマホを使います。",exRom:"마이니치 스마호오 츠카이마스。",exKo:"매일 스마트폰을 사용합니다。"},
+    {t:"과거",b:"pa",jp:"使いました",rom:"츠카이마시타",exJp:"辞書を使いました。",exRom:"지쇼오 츠카이마시타。",exKo:"사전을 사용했습니다。"},
+    {t:"현재부정",b:"n",jp:"使いません",rom:"츠카이마센",exJp:"このパソコンは使いません。",exRom:"코노 파소콘와 츠카이마센。",exKo:"이 컴퓨터는 사용하지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"使いませんでした",rom:"츠카이마센데시타",exJp:"昨日はパソコンを使いませんでした。",exRom:"키노와 파소콘오 츠카이마센데시타。",exKo:"어제는 컴퓨터를 사용하지 않았습니다。"},
+   ]},
+  {k:"하다",j:"する",r:"스루",cat:"행동",
+   forms:[
+    {t:"현재",b:"p",jp:"します",rom:"시마스",exJp:"毎日運動します。",exRom:"마이니치 운도시마스。",exKo:"매일 운동합니다。"},
+    {t:"과거",b:"pa",jp:"しました",rom:"시마시타",exJp:"宿題をしました。",exRom:"슈쿠다이오 시마시타。",exKo:"숙제를 했습니다。"},
+    {t:"현재부정",b:"n",jp:"しません",rom:"시마센",exJp:"今日は運動しません。",exRom:"쿄와 운도시마센。",exKo:"오늘은 운동하지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"しませんでした",rom:"시마센데시타",exJp:"昨日は何もしませんでした。",exRom:"키노와 나니모 시마센데시타。",exKo:"어제는 아무것도 하지 않았습니다。"},
+   ]},
+  {k:"잠에서 일어나다",j:"起きる",r:"오키루",cat:"일상",
+   forms:[
+    {t:"현재",b:"p",jp:"起きます",rom:"오키마스",exJp:"毎朝七時に起きます。",exRom:"마이아사 시치지니 오키마스。",exKo:"매일 아침 7시에 일어납니다。"},
+    {t:"과거",b:"pa",jp:"起きました",rom:"오키마시타",exJp:"今日は早く起きました。",exRom:"쿄와 하야쿠 오키마시타。",exKo:"오늘은 일찍 일어났습니다。"},
+    {t:"현재부정",b:"n",jp:"起きません",rom:"오키마센",exJp:"休みの日は早く起きません。",exRom:"야스미노 히와 하야쿠 오키마센。",exKo:"쉬는 날은 일찍 일어나지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"起きませんでした",rom:"오키마센데시타",exJp:"昨日は早く起きませんでした。",exRom:"키노와 하야쿠 오키마센데시타。",exKo:"어제는 일찍 일어나지 않았습니다。"},
+   ]},
+  {k:"자다",j:"寝る",r:"네루",cat:"일상",
+   forms:[
+    {t:"현재",b:"p",jp:"寝ます",rom:"네마스",exJp:"十一時に寝ます。",exRom:"주이치지니 네마스。",exKo:"11시에 잡니다。"},
+    {t:"과거",b:"pa",jp:"寝ました",rom:"네마시타",exJp:"昨日早く寝ました。",exRom:"키노 하야쿠 네마시타。",exKo:"어제 일찍 잤습니다。"},
+    {t:"현재부정",b:"n",jp:"寝ません",rom:"네마센",exJp:"まだ寝ません。",exRom:"마다 네마센。",exKo:"아직 자지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"寝ませんでした",rom:"네마센데시타",exJp:"昨日はあまり寝ませんでした。",exRom:"키노와 아마리 네마센데시타。",exKo:"어제는 별로 자지 않았습니다。"},
+   ]},
+  {k:"앉다",j:"座る",r:"스와루",cat:"일상",
+   forms:[
+    {t:"현재",b:"p",jp:"座ります",rom:"스와리마스",exJp:"椅子に座ります。",exRom:"이스니 스와리마스。",exKo:"의자에 앉습니다。"},
+    {t:"과거",b:"pa",jp:"座りました",rom:"스와리마시타",exJp:"前の席に座りました。",exRom:"마에노 세키니 스와리마시타。",exKo:"앞 자리에 앉았습니다。"},
+    {t:"현재부정",b:"n",jp:"座りません",rom:"스와리마센",exJp:"電車では座りません。",exRom:"덴샤데와 스와리마센。",exKo:"전철에서는 앉지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"座りませんでした",rom:"스와리마센데시타",exJp:"会議中は座りませんでした。",exRom:"카이기츄와 스와리마센데시타。",exKo:"회의 중에는 앉지 않았습니다。"},
+   ]},
+  {k:"서다",j:"立つ",r:"타츠",cat:"일상",
+   forms:[
+    {t:"현재",b:"p",jp:"立ちます",rom:"타치마스",exJp:"バスの中で立ちます。",exRom:"바스노 나카데 타치마스。",exKo:"버스 안에서 섭니다。"},
+    {t:"과거",b:"pa",jp:"立ちました",rom:"타치마시타",exJp:"急いで立ちました。",exRom:"이소이데 타치마시타。",exKo:"서둘러 일어섰습니다。"},
+    {t:"현재부정",b:"n",jp:"立ちません",rom:"타치마센",exJp:"疲れて立ちません。",exRom:"츠카레테 타치마센。",exKo:"피곤해서 서지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"立ちませんでした",rom:"타치마센데시타",exJp:"授業中は立ちませんでした。",exRom:"쥬교츄와 타치마센데시타。",exKo:"수업 중에는 서지 않았습니다。"},
+   ]},
+  {k:"일하다",j:"働く",r:"하타라쿠",cat:"일상",
+   forms:[
+    {t:"현재",b:"p",jp:"働きます",rom:"하타라키마스",exJp:"会社で働きます。",exRom:"카이샤데 하타라키마스。",exKo:"회사에서 일합니다。"},
+    {t:"과거",b:"pa",jp:"働きました",rom:"하타라키마시타",exJp:"昨日遅くまで働きました。",exRom:"키노 오소쿠마데 하타라키마시타。",exKo:"어제 늦게까지 일했습니다。"},
+    {t:"현재부정",b:"n",jp:"働きません",rom:"하타라키마센",exJp:"今日は働きません。",exRom:"쿄와 하타라키마센。",exKo:"오늘은 일하지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"働きませんでした",rom:"하타라키마센데시타",exJp:"休みの日は働きませんでした。",exRom:"야스미노 히와 하타라키마센데시타。",exKo:"쉬는 날에는 일하지 않았습니다。"},
+   ]},
+  {k:"만나다",j:"会う",r:"아우",cat:"일상",
+   forms:[
+    {t:"현재",b:"p",jp:"会います",rom:"아이마스",exJp:"明日友達に会います。",exRom:"아시타 토모다치니 아이마스。",exKo:"내일 친구를 만납니다。"},
+    {t:"과거",b:"pa",jp:"会いました",rom:"아이마시타",exJp:"昨日先生に会いました。",exRom:"키노 센세이니 아이마시타。",exKo:"어제 선생님을 만났습니다。"},
+    {t:"현재부정",b:"n",jp:"会いません",rom:"아이마센",exJp:"今日は誰にも会いません。",exRom:"쿄와 다레니모 아이마센。",exKo:"오늘은 아무도 만나지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"会いませんでした",rom:"아이마센데시타",exJp:"昨日は友達に会いませんでした。",exRom:"키노와 토모다치니 아이마센데시타。",exKo:"어제는 친구를 만나지 않았습니다。"},
+   ]},
+  {k:"기다리다",j:"待つ",r:"마츠",cat:"일상",
+   forms:[
+    {t:"현재",b:"p",jp:"待ちます",rom:"마치마스",exJp:"バスを待ちます。",exRom:"바스오 마치마스。",exKo:"버스를 기다립니다。"},
+    {t:"과거",b:"pa",jp:"待ちました",rom:"마치마시타",exJp:"一時間待ちました。",exRom:"이치지칸 마치마시타。",exKo:"한 시간 기다렸습니다。"},
+    {t:"현재부정",b:"n",jp:"待ちません",rom:"마치마센",exJp:"もう待ちません。",exRom:"모오 마치마센。",exKo:"더 이상 기다리지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"待ちませんでした",rom:"마치마센데시타",exJp:"時間がなくて待ちませんでした。",exRom:"지칸가 나쿠테 마치마센데시타。",exKo:"시간이 없어서 기다리지 않았습니다。"},
+   ]},
+  {k:"좋아하다",j:"好きだ",r:"스키다",cat:"감정",
+   forms:[
+    {t:"현재",b:"p",jp:"好きです",rom:"스키데스",exJp:"日本語が好きです。",exRom:"니혼고가 스키데스。",exKo:"일본어를 좋아합니다。"},
+    {t:"과거",b:"pa",jp:"好きでした",rom:"스키데시타",exJp:"子供のとき、魚が好きでした。",exRom:"코도모노 토키 사카나가 스키데시타。",exKo:"어렸을 때 생선을 좋아했습니다。"},
+    {t:"현재부정",b:"n",jp:"好きじゃないです",rom:"스키쟈나이데스",exJp:"辛い食べ物は好きじゃないです。",exRom:"카라이 타베모노와 스키쟈나이데스。",exKo:"매운 음식은 좋아하지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"好きじゃなかったです",rom:"스키쟈나캇타데스",exJp:"昔は野菜が好きじゃなかったです。",exRom:"무카시와 야사이가 스키쟈나캇타데스。",exKo:"예전에는 채소를 좋아하지 않았습니다。"},
+   ]},
+  {k:"싫어하다",j:"嫌いだ",r:"키라이다",cat:"감정",
+   forms:[
+    {t:"현재",b:"p",jp:"嫌いです",rom:"키라이데스",exJp:"虫が嫌いです。",exRom:"무시가 키라이데스。",exKo:"벌레를 싫어합니다。"},
+    {t:"과거",b:"pa",jp:"嫌いでした",rom:"키라이데시타",exJp:"昔は勉強が嫌いでした。",exRom:"무카시와 벤쿄가 키라이데시타。",exKo:"예전에는 공부를 싫어했습니다。"},
+    {t:"현재부정",b:"n",jp:"嫌いじゃないです",rom:"키라이쟈나이데스",exJp:"別に嫌いじゃないです。",exRom:"벳니 키라이쟈나이데스。",exKo:"딱히 싫어하지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"嫌いじゃなかったです",rom:"키라이쟈나캇타데스",exJp:"昔はそんなに嫌いじゃなかったです。",exRom:"무카시와 손나니 키라이쟈나캇타데스。",exKo:"예전에는 그렇게 싫어하지 않았습니다。"},
+   ]},
+  {k:"이해하다",j:"わかる",r:"와카루",cat:"감정",
+   forms:[
+    {t:"현재",b:"p",jp:"わかります",rom:"와카리마스",exJp:"この文法がわかります。",exRom:"코노 분포가 와카리마스。",exKo:"이 문법을 이해합니다。"},
+    {t:"과거",b:"pa",jp:"わかりました",rom:"와카리마시타",exJp:"説明を聞いてわかりました。",exRom:"세츠메이오 키이테 와카리마시타。",exKo:"설명을 듣고 이해했습니다。"},
+    {t:"현재부정",b:"n",jp:"わかりません",rom:"와카리마센",exJp:"この問題はわかりません。",exRom:"코노 몬다이와 와카리마센。",exKo:"이 문제는 이해하지 못합니다。"},
+    {t:"과거부정",b:"pn",jp:"わかりませんでした",rom:"와카리마센데시타",exJp:"最初はわかりませんでした。",exRom:"사이쇼와 와카리마센데시타。",exKo:"처음에는 이해하지 못했습니다。"},
+   ]},
+  {k:"생각하다",j:"思う",r:"오모우",cat:"감정",
+   forms:[
+    {t:"현재",b:"p",jp:"思います",rom:"오모이마스",exJp:"日本語は面白いと思います。",exRom:"니혼고와 오모시로이토 오모이마스。",exKo:"일본어는 재미있다고 생각합니다。"},
+    {t:"과거",b:"pa",jp:"思いました",rom:"오모이마시타",exJp:"難しいと思いました。",exRom:"무즈카시이토 오모이마시타。",exKo:"어렵다고 생각했습니다。"},
+    {t:"현재부정",b:"n",jp:"思いません",rom:"오모이마센",exJp:"そうは思いません。",exRom:"소와 오모이마센。",exKo:"그렇게 생각하지 않습니다。"},
+    {t:"과거부정",b:"pn",jp:"思いませんでした",rom:"오모이마센데시타",exJp:"そこまでは思いませんでした。",exRom:"소코마데와 오모이마센데시타。",exKo:"그 정도까지는 생각하지 않았습니다。"},
+   ]},
 ];
 
 let currentFilter = 'all';
@@ -166,10 +331,18 @@ function render() {
         <span class="arrow">▼</span>
       </div>
       <div class="detail">
-        <div class="row"><span class="badge p">현재</span><div class="val"><div class="jp">${v.p}</div><div class="rom">${v.pr}</div></div></div>
-        <div class="row"><span class="badge pa">과거</span><div class="val"><div class="jp">${v.pa}</div><div class="rom">${v.par}</div></div></div>
-        <div class="row"><span class="badge n">현재부정</span><div class="val"><div class="jp">${v.n}</div><div class="rom">${v.nr}</div></div></div>
-        <div class="row"><span class="badge pn">과거부정</span><div class="val"><div class="jp">${v.pn}</div><div class="rom">${v.pnr}</div></div></div>
+        ${v.forms.map(f => `
+        <div class="row">
+          <div class="row-top">
+            <span class="badge ${f.b}">${f.t}</span>
+            <div class="val"><div class="jp">${f.jp}</div><div class="rom">${f.rom}</div></div>
+          </div>
+          <div class="example">
+            <div class="ex-jp">${f.exJp}</div>
+            <div class="ex-rom">${f.exRom}</div>
+            <div class="ex-ko">${f.exKo}</div>
+          </div>
+        </div>`).join('')}
       </div>
     </div>`;
   }).join('');
@@ -179,12 +352,6 @@ render();
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js');
-}
-
-const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-if (isIOS && !isStandalone) {
-  setTimeout(() => document.getElementById('banner').classList.add('show'), 2000);
 }
 </script>
 </body>
